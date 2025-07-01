@@ -3,6 +3,7 @@ from flask import Flask, render_template, jsonify, request
 import time, json, subprocess, os
 import json, os
 import hashlib
+import sqlite3
 
 app = Flask(__name__)
 
@@ -11,6 +12,11 @@ app.secret_key = 'wdcwamulumbiabifostaer1234danibri'
 IP_LOG_FILE = "data/ip_logs.json"
 
 USER_FILE = "data/users.json"
+
+def get_db_connection():
+    conn = sqlite3.connect("data/app.db")
+    conn.row_factory = sqlite3.Row
+    return conn
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -88,22 +94,25 @@ def signup():
     if request.method == 'POST':
         user_type = request.form['user_type']
         username = request.form['username']
-        password = request.form['password']
+        password = hash_password(request.form['password'])
 
-        users = load_users()
+        conn = get_db_connection()
+        cursor = conn.cursor()
 
-        if username in users:
-            error = "Username already exists"
-        else:
-            users[username] = {
-                "password": hash_password(password),
-                "user_type": user_type
-            }
-            save_users(users)
+        try:
+            cursor.execute(
+                "INSERT INTO users (username, password, user_type) VALUES (?, ?, ?)",
+                (username, password, user_type)
+            )
+            conn.commit()
             session['logged_in'] = True
             session['user_type'] = user_type
             session['username'] = username
             return redirect(url_for('dashboard'))
+        except sqlite3.IntegrityError:
+            error = "Username already exists"
+        finally:
+            conn.close()
 
     return render_template('signup.html', error=error)
 
@@ -112,14 +121,21 @@ def login():
     error = None
     if request.method == 'POST':
         username = request.form['username']
-        password = request.form['password']
+        password = hash_password(request.form['password'])
 
-        users = load_users()
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT * FROM users WHERE username = ? AND password = ?",
+            (username, password)
+        )
+        user = cursor.fetchone()
+        conn.close()
 
-        if username in users and users[username]["password"] == hash_password(password):
+        if user:
             session['logged_in'] = True
-            session['user_type'] = users[username]["user_type"]
-            session['username'] = username
+            session['user_type'] = user['user_type']
+            session['username'] = user['username']
             return redirect(url_for('dashboard'))
         else:
             error = "Invalid username or password"
