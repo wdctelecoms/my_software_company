@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, session, url_for
 from flask import Flask, render_template, jsonify, request
 import time, json, subprocess, os
@@ -130,14 +131,29 @@ def login():
             (username, password)
         )
         user = cursor.fetchone()
-        conn.close()
 
         if user:
+            # ✅ Set session
             session['logged_in'] = True
             session['user_type'] = user['user_type']
             session['username'] = user['username']
+
+            # ✅ Record login to logins table
+            cursor.execute(
+                "INSERT INTO logins (username, login_time, ip) VALUES (?, ?, ?)",
+                (
+                    user['username'],
+                    datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    request.remote_addr
+                )
+            )
+            conn.commit()
+            conn.close()
+
             return redirect(url_for('dashboard'))
+
         else:
+            conn.close()
             error = "Invalid username or password"
 
     return render_template('login.html', error=error)
@@ -146,6 +162,19 @@ def login():
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+@app.route('/login-history')
+def login_history():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM logins ORDER BY login_time DESC")
+    logs = cursor.fetchall()
+    conn.close()
+    
+    return render_template('login_history.html', logs=logs)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

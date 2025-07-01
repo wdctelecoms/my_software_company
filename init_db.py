@@ -12,6 +12,15 @@ CREATE TABLE IF NOT EXISTS users (
 )
 """)
 
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS logins (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT NOT NULL,
+    login_time TEXT NOT NULL,
+    ip TEXT NOT NULL
+)
+""")
+
 conn.commit()
 conn.close()
 

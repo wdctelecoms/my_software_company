@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login History</title>
+    <style>
+        body { background: #111; color: #fff; font-family: sans-serif; padding: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 10px; border-bottom: 1px solid #555; text-align: left; }
+        th { background: #333; }
+    </style>
+</head>
+<body>
+    <h2>Login History</h2>
+    <table>
+        <tr>
+            <th>Username</th>
+            <th>IP Address</th>
+            <th>Login Time</th>
+        </tr>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log['username'] }}</td>
+            <td>{{ log['ip'] }}</td>
+            <td>{{ log['login_time'] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <p><a href="/dashboard" style="color:lightblue;">Back to Dashboard</a></p>
+</body>
+</html>
