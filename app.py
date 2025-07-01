@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, session, url_for
 from flask import Flask, render_template, jsonify, request
 import time, json, subprocess, os
 import json, os
-
+import hashlib
 
 app = Flask(__name__)
 
@@ -11,6 +11,9 @@ app.secret_key = 'wdcwamulumbiabifostaer1234danibri'
 IP_LOG_FILE = "data/ip_logs.json"
 
 USER_FILE = "data/users.json"
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def load_users():
     if os.path.exists(USER_FILE):
@@ -93,7 +96,7 @@ def signup():
             error = "Username already exists"
         else:
             users[username] = {
-                "password": password,
+                "password": hash_password(password),
                 "user_type": user_type
             }
             save_users(users)
@@ -113,7 +116,7 @@ def login():
 
         users = load_users()
 
-        if username in users and users[username]["password"] == password:
+        if username in users and users[username]["password"] == hash_password(password):
             session['logged_in'] = True
             session['user_type'] = users[username]["user_type"]
             session['username'] = username
