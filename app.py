@@ -176,5 +176,35 @@ def login_history():
     
     return render_template('login_history.html', logs=logs)
 
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+
+    message = None
+    error = None
+
+    if request.method == 'POST':
+        old_password = hash_password(request.form['old_password'])
+        new_password = hash_password(request.form['new_password'])
+        username = session['username']
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+        user = cursor.fetchone()
+
+        if user and user["password"] == old_password:
+            cursor.execute("UPDATE users SET password = ? WHERE username = ?", (new_password, username))
+            conn.commit()
+            message = "Password updated successfully."
+        else:
+            error = "Old password is incorrect."
+
+        conn.close()
+
+    return render_template("reset_password.html", message=message, error=error)
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
