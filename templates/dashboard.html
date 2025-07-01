@@ -23,5 +23,49 @@
     <p>Memory Usage: <span id="memory">-</span></p>
     <p>Disk Usage: <span id="disk">-</span></p>
     <p>Updated: <span id="time">-</span></p>
+<h2>🚨 Log Suspicious IP</h2>
+<form onsubmit="submitIP(event)">
+    <input type="text" id="ip" placeholder="IP address" required>
+    <input type="text" id="reason" placeholder="Reason" required>
+    <button type="submit">Log IP</button>
+</form>
+
+<h3>🛑 Logged IPs</h3>
+<ul id="ip-list"></ul>
+
+<script>
+    function submitIP(event) {
+        event.preventDefault();
+        const ip = document.getElementById("ip").value;
+        const reason = document.getElementById("reason").value;
+
+        fetch('/log-ip', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ip, reason })
+        }).then(res => res.json())
+          .then(data => {
+              alert(data.message);
+              loadIPs();
+          });
+    }
+
+    function loadIPs() {
+        fetch('/get-ips')
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById("ip-list");
+                list.innerHTML = "";
+                data.forEach(entry => {
+                    const item = document.createElement("li");
+                    item.textContent = `${entry.ip} - ${entry.reason} (${entry.timestamp})`;
+                    list.appendChild(item);
+                });
+            });
+    }
+
+    // Call on load
+    loadIPs();
+</script>
 </body>
 </html>
