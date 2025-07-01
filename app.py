@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, session, url_for
 from flask import Flask, render_template, jsonify, request
 import time, json, subprocess, os
+import json, os
+
 
 app = Flask(__name__)
 
@@ -8,10 +10,17 @@ app.secret_key = 'wdcwamulumbiabifostaer1234danibri'
 
 IP_LOG_FILE = "data/ip_logs.json"
 
-USERS = {
-    "person": {"username": "person1", "password": "pass123"},
-    "company": {"username": "company1", "password": "pass456"}
-}
+USER_FILE = "data/users.json"
+
+def load_users():
+    if os.path.exists(USER_FILE):
+        with open(USER_FILE, "r") as f:
+            return json.load(f)
+    return {}
+
+def save_users(users):
+    with open(USER_FILE, "w") as f:
+        json.dump(users, f, indent=2)
 
 @app.route('/')
 def home():
@@ -70,23 +79,47 @@ def get_ips():
     with open(IP_LOG_FILE, "r") as f:
         return jsonify(json.load(f))
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
     error = None
     if request.method == 'POST':
         user_type = request.form['user_type']
         username = request.form['username']
         password = request.form['password']
 
-        if user_type in USERS:
-            if USERS[user_type]["username"] == username and USERS[user_type]["password"] == password:
-                session['logged_in'] = True
-                session['user_type'] = user_type
-                return redirect(url_for('dashboard'))
-            else:
-                error = "Invalid username or password"
+        users = load_users()
+
+        if username in users:
+            error = "Username already exists"
         else:
-            error = "Invalid user type"
+            users[username] = {
+                "password": password,
+                "user_type": user_type
+            }
+            save_users(users)
+            session['logged_in'] = True
+            session['user_type'] = user_type
+            session['username'] = username
+            return redirect(url_for('dashboard'))
+
+    return render_template('signup.html', error=error)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        users = load_users()
+
+        if username in users and users[username]["password"] == password:
+            session['logged_in'] = True
+            session['user_type'] = users[username]["user_type"]
+            session['username'] = username
+            return redirect(url_for('dashboard'))
+        else:
+            error = "Invalid username or password"
 
     return render_template('login.html', error=error)
 
