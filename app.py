@@ -1,9 +1,17 @@
+from flask import Flask, render_template, request, redirect, session, url_for
 from flask import Flask, render_template, jsonify, request
 import time, json, subprocess, os
 
 app = Flask(__name__)
 
+app.secret_key = 'wdcwamulumbiabifostaer1234danibri'
+
 IP_LOG_FILE = "data/ip_logs.json"
+
+USERS = {
+    "person": {"username": "person1", "password": "pass123"},
+    "company": {"username": "company1", "password": "pass456"}
+}
 
 @app.route('/')
 def home():
@@ -11,6 +19,8 @@ def home():
 
 @app.route('/dashboard')
 def dashboard():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
     return render_template("dashboard.html")
 
 @app.route('/system-stats')
@@ -59,6 +69,26 @@ def get_ips():
         return jsonify([])
     with open(IP_LOG_FILE, "r") as f:
         return jsonify(json.load(f))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        user_type = request.form['user_type']
+        username = request.form['username']
+        password = request.form['password']
+
+        if user_type in USERS:
+            if USERS[user_type]["username"] == username and USERS[user_type]["password"] == password:
+                session['logged_in'] = True
+                session['user_type'] = user_type
+                return redirect(url_for('dashboard'))
+            else:
+                error = "Invalid username or password"
+        else:
+            error = "Invalid user type"
+
+    return render_template('login.html', error=error)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
