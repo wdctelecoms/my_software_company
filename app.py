@@ -1,3 +1,4 @@
+from email.mime.text import MIMEText
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, session, url_for
 from flask import Flask, render_template, jsonify, request
@@ -5,6 +6,7 @@ import time, json, subprocess, os
 import json, os
 import hashlib
 import sqlite3
+import smtplib
 
 app = Flask(__name__)
 
@@ -13,6 +15,25 @@ app.secret_key = 'wdcwamulumbiabifostaer1234danibri'
 IP_LOG_FILE = "data/ip_logs.json"
 
 USER_FILE = "data/users.json"
+
+def send_password_change_email(to_email, username):
+    from_email = "phoneguardianshield@gmail.com"
+    app_password = "oqcw bcvd gauq xxlv"
+
+    subject = "Password Changed for Your Account"
+    body = f"Hello {username},\n\nYour password was just changed.\n\nIf this wasn't you, reset your password immediately."
+
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = from_email
+    msg['To'] = to_email
+
+    try:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(from_email, app_password)
+            smtp.send_message(msg)
+    except Exception as e:
+        print("Email failed:", e)
 
 def get_db_connection():
     conn = sqlite3.connect("data/app.db")
@@ -92,30 +113,38 @@ def get_ips():
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     error = None
+    message = None
+
     if request.method == 'POST':
-        user_type = request.form['user_type']
         username = request.form['username']
-        password = hash_password(request.form['password'])
+        password = hash_password(request.form['password'])  # Make sure hash_password() is defined
+        user_type = request.form['user_type']
+        email = request.form['email']
 
         conn = get_db_connection()
         cursor = conn.cursor()
 
         try:
             cursor.execute(
-                "INSERT INTO users (username, password, user_type) VALUES (?, ?, ?)",
-                (username, password, user_type)
+                "INSERT INTO users (username, password, user_type, email) VALUES (?, ?, ?, ?)",
+                (username, password, user_type, email)
             )
             conn.commit()
+
+            # Auto-login after signup
             session['logged_in'] = True
-            session['user_type'] = user_type
             session['username'] = username
+            session['user_type'] = user_type
+
             return redirect(url_for('dashboard'))
+
         except sqlite3.IntegrityError:
-            error = "Username already exists"
+            error = "Username already exists. Please choose a different one."
+
         finally:
             conn.close()
 
-    return render_template('signup.html', error=error)
+    return render_template("signup.html", error=error, message=message)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -198,7 +227,11 @@ def reset_password():
         if user and user["password"] == old_password:
             cursor.execute("UPDATE users SET password = ? WHERE username = ?", (new_password, username))
             conn.commit()
-            message = "Password updated successfully."
+
+            # ✅ Send email alert
+            send_password_change_email(user['email'], username)
+
+            message = "Password updated and email sent successfully."
         else:
             error = "Old password is incorrect."
 

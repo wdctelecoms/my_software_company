@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
     user_type TEXT NOT NULL
+    email TEXT NOT NULL
 )
 """)
 
@@ -20,6 +21,7 @@ CREATE TABLE IF NOT EXISTS logins (
     ip TEXT NOT NULL
 )
 """)
+
 
 conn.commit()
 conn.close()
