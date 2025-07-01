@@ -7,6 +7,10 @@ IP_LOG_FILE = "data/ip_logs.json"
 
 @app.route('/')
 def home():
+    return render_template("index.html")
+
+@app.route('/dashboard')
+def dashboard():
     return render_template("dashboard.html")
 
 @app.route('/system-stats')
