@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cybersecurity Dashboard</title>
+    <script>
+        function fetchStats() {
+            fetch('/system-stats')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById("cpu").innerText = data.cpu + "%";
+                    document.getElementById("memory").innerText = data.memory + "%";
+                    document.getElementById("disk").innerText = data.disk + "%";
+                    document.getElementById("time").innerText = data.time;
+                });
+        }
+        setInterval(fetchStats, 2000);  // Update every 2 seconds
+        window.onload = fetchStats;
+    </script>
+</head>
+<body>
+    <h1>📊 Cybersecurity Dashboard</h1>
+    <p>CPU Usage: <span id="cpu">-</span></p>
+    <p>Memory Usage: <span id="memory">-</span></p>
+    <p>Disk Usage: <span id="disk">-</span></p>
+    <p>Updated: <span id="time">-</span></p>
+</body>
+</html>
