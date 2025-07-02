@@ -16,18 +16,49 @@
         setInterval(fetchStats, 2000);  // Update every 2 seconds
         window.onload = fetchStats;
     </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <form action="/logout" method="get" style="text-align:right; margin: 10px;">
     <button style="background:red; color:white; padding:10px 20px; border:none; border-radius:5px;">Logout</button>
 </form>
-    <h1>📊 Cybersecurity Dashboard</h1>
-    <p>CPU Usage: <span id="cpu">-</span></p>
-    <p>Memory Usage: <span id="memory">-</span></p>
-    <p>Disk Usage: <span id="disk">-</span></p>
-    <p>Updated: <span id="time">-</span></p>
-    <p><a href="/login-history" style="color:lightgreen;">View Login History</a></p>
-    <p><a href="/reset-password" style="color: orange;">🔐 Reset Password</a></p>
+<h2>Welcome, {{ username }}!</h2>
+<p>User type: {{ user_type }}</p>
+
+<hr>
+<h3>📊 System Stats:</h3>
+<p>Total Users: {{ total_users }}</p>
+<p>Total Logins: {{ total_logins }}</p>
+
+<h4>Top Active Users:</h4>
+<ul>
+  {% for row in top_users %}
+    <li>{{ row['username'] }} - {{ row['login_count'] }} logins</li>
+  {% endfor %}
+</ul>
+<canvas id="loginsChart" width="400" height="200"></canvas>
+
+<script>
+  const ctx = document.getElementById('loginsChart').getContext('2d');
+  const loginsChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: {{ user_labels | safe }},
+      datasets: [{
+        label: 'Logins per User',
+        data: {{ login_counts | safe }},
+        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+</script>
 <h2>🚨 Log Suspicious IP</h2>
 <form onsubmit="submitIP(event)">
     <input type="text" id="ip" placeholder="IP address" required>

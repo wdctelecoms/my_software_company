@@ -1,3 +1,4 @@
+from flask import Flask, render_template, request, redirect, url_for, session
 from email.mime.text import MIMEText
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, session, url_for
@@ -57,11 +58,63 @@ def save_users(users):
 def home():
     return render_template("index.html")
 
+
 @app.route('/dashboard')
 def dashboard():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
-    return render_template("dashboard.html")
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Total users
+    cursor.execute("SELECT COUNT(*) FROM users")
+    total_users = cursor.fetchone()[0]
+
+    # Total logins
+    cursor.execute("SELECT COUNT(*) FROM logins")
+    total_logins = cursor.fetchone()[0]
+
+    # Logins per user
+    cursor.execute("""
+        SELECT username, COUNT(*) as login_count
+        FROM logins
+        GROUP BY username
+        ORDER BY login_count DESC
+    """)
+    top_users = cursor.fetchall()
+
+    # Logins per day
+    cursor.execute("""
+        SELECT DATE(login_time) as day, COUNT(*) as count
+        FROM logins
+        GROUP BY day
+        ORDER BY day ASC
+    """)
+    logins_per_day = cursor.fetchall()
+
+    conn.close()
+
+    # Prepare chart data
+    user_labels = [row['username'] for row in top_users]
+    login_counts = [row['login_count'] for row in top_users]
+
+    day_labels = [row['day'] for row in logins_per_day]
+    day_counts = [row['count'] for row in logins_per_day]
+
+    return render_template(
+        'dashboard.html',
+        username=session['username'],
+        user_type=session['user_type'],
+        total_users=total_users,
+        total_logins=total_logins,
+        top_users=top_users,
+        user_labels=user_labels,
+        login_counts=login_counts,
+        day_labels=day_labels,
+        day_counts=day_counts
+    )
+
 
 @app.route('/system-stats')
 def system_stats():
