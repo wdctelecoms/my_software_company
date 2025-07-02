@@ -19,7 +19,18 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      animation: fadeIn 1s ease-in-out;
+    }
+  </style>
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     <ul>
@@ -42,6 +53,7 @@
     <form action="/logout" method="get" style="text-align:right; margin: 10px;">
     <button style="background:red; color:white; padding:10px 20px; border:none; border-radius:5px;">Logout</button>
 </form>
+
 <h2>Welcome, {{ username }}!</h2>
 <p>User type: {{ user_type }}</p>
 

@@ -20,7 +20,7 @@ IP_LOG_FILE = "data/ip_logs.json"
 USER_FILE = "data/users.json"
 
 def send_signup_confirmation_email(email, username, user_type):
-    subject = "Welcome to My Software Company"
+    subject = "Welcome to cybersentinental 360"
     if user_type == "person":
         message = f"Hi {username},\n\nThank you for signing up as a person. We're excited to have you on board!"
     else:
@@ -257,13 +257,17 @@ def login():
     error = None
 
     if request.method == 'POST':
-        identifier = request.form['identifier']
+        identifier = request.form['identifier']  # username or email
         password = hash_password(request.form['password'])
 
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM users WHERE username = ? OR email = ?", (identifier, identifier))
+        # Allow login by either username or email
+        cursor.execute(
+            "SELECT * FROM users WHERE username = ? OR email = ?",
+            (identifier, identifier)
+        )
         user = cursor.fetchone()
         conn.close()
 
@@ -335,9 +339,9 @@ def reset_password():
 
 @app.route('/dashboard-person')
 def dashboard_person():
-    if not session.get('logged_in') or session.get('user_type') != 'person':
-        return redirect(url_for('login'))
-    return render_template('dashboard_person.html', username=session['username'])
+    if 'logged_in' in session and session['user_type'] == 'person':
+        return render_template('person_dashboard.html')
+    return redirect(url_for('login'))
 
 @app.route('/dashboard-company')
 def dashboard_company():
