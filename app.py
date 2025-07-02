@@ -149,41 +149,29 @@ def signup():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     error = None
+
     if request.method == 'POST':
-        username = request.form['username']
+        identifier = request.form['identifier']
         password = hash_password(request.form['password'])
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT * FROM users WHERE username = ? AND password = ?",
-            (username, password)
-        )
+
+        cursor.execute("SELECT * FROM users WHERE username = ? OR email = ?", (identifier, identifier))
         user = cursor.fetchone()
+        conn.close()
 
-        if user:
-            # ✅ Set session
+        if user and user['password'] == password:
             session['logged_in'] = True
-            session['user_type'] = user['user_type']
             session['username'] = user['username']
+            session['user_type'] = user['user_type']
 
-            # ✅ Record login to logins table
-            cursor.execute(
-                "INSERT INTO logins (username, login_time, ip) VALUES (?, ?, ?)",
-                (
-                    user['username'],
-                    datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    request.remote_addr
-                )
-            )
-            conn.commit()
-            conn.close()
-
-            return redirect(url_for('dashboard'))
-
+            if user['user_type'] == 'person':
+                return redirect(url_for('dashboard_person'))
+            elif user['user_type'] == 'company':
+                return redirect(url_for('dashboard_company'))
         else:
-            conn.close()
-            error = "Invalid username or password"
+            error = "Invalid username/email or password."
 
     return render_template('login.html', error=error)
 
@@ -238,6 +226,18 @@ def reset_password():
         conn.close()
 
     return render_template("reset_password.html", message=message, error=error)
+
+@app.route('/dashboard-person')
+def dashboard_person():
+    if not session.get('logged_in') or session.get('user_type') != 'person':
+        return redirect(url_for('login'))
+    return render_template('dashboard_person.html', username=session['username'])
+
+@app.route('/dashboard-company')
+def dashboard_company():
+    if not session.get('logged_in') or session.get('user_type') != 'company':
+        return redirect(url_for('login'))
+    return render_template('dashboard_company.html', username=session['username'])
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
