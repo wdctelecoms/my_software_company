@@ -1,3 +1,4 @@
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask import Flask, render_template, request, redirect, url_for, session
 from email.mime.text import MIMEText
 from datetime import datetime
@@ -11,11 +12,33 @@ import smtplib
 
 app = Flask(__name__)
 
+
 app.secret_key = 'wdcwamulumbiabifostaer1234danibri'
 
 IP_LOG_FILE = "data/ip_logs.json"
 
 USER_FILE = "data/users.json"
+
+def send_signup_confirmation_email(email, username, user_type):
+    subject = "Welcome to My Software Company"
+    if user_type == "person":
+        message = f"Hi {username},\n\nThank you for signing up as a person. We're excited to have you on board!"
+    else:
+        message = f"Hi {username},\n\nThank you for signing up as a company. We look forward to working with your team!"
+
+    msg = MIMEText(message)
+    msg['Subject'] = subject
+    msg['From'] = "phoneguardianshield@gmail.com"
+    msg['To'] = email
+
+    try:
+        smtp_server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
+        smtp_server.login("phoneguardianshield@gmail.com", "oqcw bcvd gauq xxlv")  # 🔐 Use app password
+        smtp_server.send_message(msg)
+        smtp_server.quit()
+        print("Signup confirmation email sent.")
+    except Exception as e:
+        print("Failed to send confirmation email:", e)
 
 def send_password_change_email(to_email, username):
     from_email = "phoneguardianshield@gmail.com"
@@ -64,57 +87,55 @@ def dashboard():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
 
+    user_type = session['user_type']
+    username = session['username']
+
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Total users
+    # Shared stats
     cursor.execute("SELECT COUNT(*) FROM users")
     total_users = cursor.fetchone()[0]
 
-    # Total logins
     cursor.execute("SELECT COUNT(*) FROM logins")
     total_logins = cursor.fetchone()[0]
 
-    # Logins per user
+    # For graphs
     cursor.execute("""
         SELECT username, COUNT(*) as login_count
         FROM logins
-        GROUP BY username
-        ORDER BY login_count DESC
+        GROUP BY username ORDER BY login_count DESC
     """)
     top_users = cursor.fetchall()
 
-    # Logins per day
     cursor.execute("""
         SELECT DATE(login_time) as day, COUNT(*) as count
         FROM logins
-        GROUP BY day
-        ORDER BY day ASC
+        GROUP BY day ORDER BY day ASC
     """)
     logins_per_day = cursor.fetchall()
 
+    # Admin-only: user list
+    users = []
+    if user_type == 'admin':
+        cursor.execute("SELECT id, username, email, user_type FROM users")
+        users = cursor.fetchall()
+
     conn.close()
-
-    # Prepare chart data
-    user_labels = [row['username'] for row in top_users]
-    login_counts = [row['login_count'] for row in top_users]
-
-    day_labels = [row['day'] for row in logins_per_day]
-    day_counts = [row['count'] for row in logins_per_day]
 
     return render_template(
         'dashboard.html',
-        username=session['username'],
-        user_type=session['user_type'],
+        username=username,
+        user_type=user_type,
         total_users=total_users,
         total_logins=total_logins,
         top_users=top_users,
-        user_labels=user_labels,
-        login_counts=login_counts,
-        day_labels=day_labels,
-        day_counts=day_counts
+        user_labels=[u['username'] for u in top_users],
+        login_counts=[u['login_count'] for u in top_users],
+        day_labels=[r['day'] for r in logins_per_day],
+        day_counts=[r['count'] for r in logins_per_day],
+        users=users  # Only filled for admin
     )
-
 
 @app.route('/system-stats')
 def system_stats():
@@ -165,39 +186,45 @@ def get_ips():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    error = None
-    message = None
-
     if request.method == 'POST':
         username = request.form['username']
-        password = hash_password(request.form['password'])  # Make sure hash_password() is defined
+        password = request.form['password']
         user_type = request.form['user_type']
         email = request.form['email']
 
+        hashed_pw = hash_password(password)
+
         conn = get_db_connection()
         cursor = conn.cursor()
-
         try:
             cursor.execute(
                 "INSERT INTO users (username, password, user_type, email) VALUES (?, ?, ?, ?)",
-                (username, password, user_type, email)
+                (username, hashed_pw, user_type, email)
             )
             conn.commit()
 
-            # Auto-login after signup
             session['logged_in'] = True
             session['username'] = username
             session['user_type'] = user_type
 
+            send_signup_confirmation_email(email, username, user_type)
+
+            # ✅ ADD THIS CONFIRMATION MESSAGE:
+            if user_type == 'person':
+                flash(f"Welcome {username}! You've signed up as a person.")
+            elif user_type == 'company':
+                flash(f"Welcome {username}! You've signed up as a company.")
+
             return redirect(url_for('dashboard'))
 
         except sqlite3.IntegrityError:
-            error = "Username already exists. Please choose a different one."
+            error = "Username already exists"
+            return render_template('signup.html', error=error)
 
         finally:
             conn.close()
 
-    return render_template("signup.html", error=error, message=message)
+    return render_template('signup.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -291,6 +318,18 @@ def dashboard_company():
     if not session.get('logged_in') or session.get('user_type') != 'company':
         return redirect(url_for('login'))
     return render_template('dashboard_company.html', username=session['username'])
+
+@app.route('/person-dashboard')
+def person_dashboard():
+    if session.get('user_type') != 'person':
+        return redirect(url_for('dashboard'))
+    return render_template('person_dashboard.html')
+
+@app.route('/company-dashboard')
+def company_dashboard():
+    if session.get('user_type') != 'company':
+        return redirect(url_for('dashboard'))
+    return render_template('company_dashboard.html')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

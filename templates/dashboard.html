@@ -19,6 +19,17 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <ul>
+      {% for message in messages %}
+        <li>{{ message }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
+
     <form action="/logout" method="get" style="text-align:right; margin: 10px;">
     <button style="background:red; color:white; padding:10px 20px; border:none; border-radius:5px;">Logout</button>
 </form>
@@ -26,7 +37,7 @@
 <p>User type: {{ user_type }}</p>
 
 <hr>
-<h3>📊 System Stats:</h3>
+<h3> System Stats:</h3>
 <p>Total Users: {{ total_users }}</p>
 <p>Total Logins: {{ total_logins }}</p>
 
@@ -59,12 +70,29 @@
     }
   });
 </script>
-<h2>🚨 Log Suspicious IP</h2>
+<h2> Log Suspicious IP</h2>
 <form onsubmit="submitIP(event)">
     <input type="text" id="ip" placeholder="IP address" required>
     <input type="text" id="reason" placeholder="Reason" required>
     <button type="submit">Log IP</button>
 </form>
+
+{% if user_type == 'admin' %}
+<h2> Admin Panel</h2>
+<table border="1">
+  <tr>
+    <th>ID</th><th>Username</th><th>Email</th><th>User Type</th>
+  </tr>
+  {% for user in users %}
+  <tr>
+    <td>{{ user['id'] }}</td>
+    <td>{{ user['username'] }}</td>
+    <td>{{ user['email'] }}</td>
+    <td>{{ user['user_type'] }}</td>
+  </tr>
+  {% endfor %}
+</table>
+{% endif %}
 
 <h3>🛑 Logged IPs</h3>
 <ul id="ip-list"></ul>
