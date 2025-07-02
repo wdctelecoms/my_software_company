@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Person Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #f5f7fa, #c3cfe2);
+      padding: 40px;
+    }
+
+    .dashboard-container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      background: #3498db;
+      color: white;
+      text-align: center;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .btn:hover {
+      background: #2980b9;
+    }
+
+    .logout {
+      background: #e74c3c;
+    }
+
+    .logout:hover {
+      background: #c0392b;
+    }
+
+    .info {
+      margin: 20px 0;
+      font-size: 16px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-container">
+    <h2>Hello, {{ username }}</h2>
+    <p class="info">You are logged in as a <strong>person</strong>.</p>
+
+    <a href="{{ url_for('company_access_request') }}" class="btn">Request Company Access</a>
+    <a href="{{ url_for('dashboard') }}" class="btn">Back to Main Dashboard</a>
+    <a href="{{ url_for('logout') }}" class="btn logout">Logout</a>
+  </div>
+
+</body>
+</html>

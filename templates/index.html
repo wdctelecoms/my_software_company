@@ -1,42 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Welcome | My Software Company</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to right, #000428, #004e92);
-            color: white;
-            text-align: center;
-            padding: 60px;
-        }
-        h1 {
-            font-size: 3em;
-        }
-        .btn {
-            background: white;
-            color: #004e92;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.2em;
-            cursor: pointer;
-            margin: 10px;
-            transition: 0.3s;
-            text-decoration: none;
-        }
-        .btn:hover {
-            background: #ccc;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CyberSentinel 360</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      overflow-x: hidden;
+    }
+
+    header {
+      padding: 20px;
+      text-align: left;
+    }
+
+    .get-started {
+      background-color: #ff6f61;
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 30px;
+      font-size: 16px;
+      cursor: pointer;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    .hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      height: 90vh;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      font-size: 3em;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      font-size: 1.2em;
+      margin-bottom: 30px;
+      color: #ddd;
+    }
+
+    .wave {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 120px;
+      background: url('https://svgshare.com/i/uHk.svg') repeat-x;
+      animation: waveMove 10s linear infinite;
+    }
+
+    @keyframes waveMove {
+      0% { background-position-x: 0; }
+      100% { background-position-x: 1000px; }
+    }
+
+    section {
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .team, .testimonials {
+      background-color: #1c1c1c;
+      border-top: 2px solid #333;
+    }
+
+    .member, .testimonial {
+      margin: 20px auto;
+      max-width: 500px;
+      background: #2e2e2e;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    }
+
+    .member h3, .testimonial h3 {
+      margin: 10px 0;
+      color: #ff6f61;
+    }
+  </style>
 </head>
 <body>
-    <h1>Welcome to My Software Company 🚀</h1>
-    <p>Your Mobile-Powered Cybersecurity System</p>
 
-    <a href="/login" class="btn">Login</a>
-    <a href="/signup" class="btn">Sign Up</a>
-    <a href="/about" class="btn">About the System</a>
+  <header>
+    <button class="get-started" onclick="window.location.href='/signup'">Get Started</button>
+  </header>
+
+  <div class="hero">
+    <h1>CyberSentinel 360</h1>
+    <p><em>Your Security is Our Top Priority</em></p>
+    <p>Defending People and Companies from Cyber Threats with Real-Time AI Monitoring, Secure Dashboards, and Smart Alerts.</p>
+  </div>
+
+<section class="threats-section" style="background-color: #0b0f1a; color: #ffffff; padding: 50px 20px;">
+  <div style="max-width: 1000px; margin: auto;">
+    <h2 style="font-size: 2.5em; text-align: center; margin-bottom: 20px;">The Cybersecurity Crisis We're Solving</h2>
+    <p style="font-size: 1.2em; line-height: 1.7;">
+      In today’s digital age, cybersecurity threats have become more dangerous, complex, and widespread. From <strong>malware and phishing scams</strong> to <strong>DDoS attacks and supply chain infiltration</strong>, these threats cause devastating data breaches, financial loss, and disruptions to essential systems.
+    </p>
+    <p style="font-size: 1.2em; line-height: 1.7;">
+      CyberSentinel 360 is built to defend against these rising challenges. Here’s what we’re tackling:
+    </p>
+
+    <ul style="list-style-type: disc; padding-left: 30px; line-height: 1.8;">
+      <li><strong>Cybercrime:</strong> Protecting users from fraud, identity theft, and attacks on critical infrastructure.</li>
+      <li><strong>Data Breaches:</strong> Preventing unauthorized access to personal, financial, and corporate data.</li>
+      <li><strong>Malware & Ransomware:</strong> Detecting and stopping malicious software before it can lock or steal your data.</li>
+      <li><strong>Phishing Attacks:</strong> Shielding users from deceptive links and emails that steal sensitive info.</li>
+      <li><strong>Denial-of-Service (DoS):</strong> Defending systems from being overwhelmed by fake traffic.</li>
+      <li><strong>Supply Chain Attacks:</strong> Monitoring third-party vendors to prevent backdoor intrusions.</li>
+      <li><strong>Insider Threats:</strong> Logging and analyzing internal actions to prevent leaks and sabotage.</li>
+      <li><strong>Cybersecurity Awareness:</strong> Educating users and companies to recognize and avoid threats.</li>
+      <li><strong>Skills Gap:</strong> Automating protection for those without deep technical knowledge.</li>
+      <li><strong>Advanced Threats:</strong> Continuously adapting to new attack techniques using AI.</li>
+      <li><strong>Geopolitical Attacks:</strong> Tracking and identifying state-sponsored cyber-espionage.</li>
+      <li><strong>Third-party Vulnerability:</strong> Giving full visibility into partner and vendor security.</li>
+      <li><strong>Outdated Systems:</strong> Monitoring and warning about software that increases risk.</li>
+      <li><strong>Ethical & Privacy Concerns:</strong> Enforcing responsible digital use and user privacy.</li>
+    </ul>
+
+    <p style="font-size: 1.2em; line-height: 1.7; margin-top: 20px;">
+      <strong>CyberSentinel 360</strong> is more than just protection — it’s peace of mind in a rapidly evolving digital battlefield.
+    </p>
+  </div>
+</section>
+
+  <div class="wave"></div>
+
+  <section class="team">
+    <h2>Meet Our Team</h2>
+    <div class="member">
+      <h3>Washington Mulumbi</h3>
+      <p>Founder & Security Engineer</p>
+    </div>
+    <div class="member">
+      <h3>Jane Doe</h3>
+      <p>AI Specialist</p>
+    </div>
+    <div class="member">
+      <h3>John Smith</h3>
+      <p>Backend Developer</p>
+    </div>
+  </section>
+
+  <section class="testimonials">
+    <h2>What People Say</h2>
+    <div class="testimonial">
+      <h3>Company X</h3>
+      <p>“CyberSentinel 360 gives us peace of mind knowing our systems are under constant protection.”</p>
+    </div>
+    <div class="testimonial">
+      <h3>Sarah – Personal User</h3>
+      <p>“It’s like having a cyber bodyguard. Simple, effective, and powerful.”</p>
+    </div>
+  </section>
+<footer style="background-color: #0a0e1a; color: #ffffff; padding: 40px 20px; font-family: Arial, sans-serif;">
+  <div style="max-width: 1200px; margin: auto; display: flex; flex-wrap: wrap; justify-content: space-between;">
+    
+    <div style="flex: 1 1 250px; margin-bottom: 20px;">
+      <h2 style="font-size: 1.8em; margin-bottom: 10px;">CyberSentinel 360</h2>
+      <p style="font-size: 1em;">Your Security is Our Top Priority</p>
+    </div>
+
+    <div style="flex: 1 1 150px; margin-bottom: 20px;">
+      <h3 style="margin-bottom: 10px;">Quick Links</h3>
+      <ul style="list-style: none; padding: 0;">
+        <li><a href="/" style="color: #aaa; text-decoration: none;">Home</a></li>
+        <li><a href="/signup" style="color: #aaa; text-decoration: none;">Get Started</a></li>
+        <li><a href="/login" style="color: #aaa; text-decoration: none;">Login</a></li>
+        <li><a href="/contact" style="color: #aaa; text-decoration: none;">Contact</a></li>
+      </ul>
+    </div>
+
+    <div style="flex: 1 1 200px; margin-bottom: 20px;">
+      <h3 style="margin-bottom: 10px;">Contact</h3>
+      <p>Email: support@cybersentinel360.com</p>
+      <p>Location: Global</p>
+    </div>
+  </div>
+
+  <div style="border-top: 1px solid #333; text-align: center; padding-top: 20px; margin-top: 30px; font-size: 0.9em; color: #888;">
+    &copy; 2025 CyberSentinel 360. All rights reserved.
+  </div>
+</footer>
 </body>
 </html>

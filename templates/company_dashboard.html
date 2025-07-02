@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Company Info</title>
+</head>
+<body>
+  <h2>{{ company['username'] }} - Company Dashboard</h2>
+  <p>Email: {{ company['email'] }}</p>
+  <p>More company details coming soon...</p>
+
+  <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</body>
+</html>

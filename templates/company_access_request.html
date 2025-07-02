@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Access a Company</title>
+</head>
+<body>
+  <h2>Select a Company to View</h2>
+  <ul>
+    {% for company in companies %}
+      <li>
+        {{ company['username'] }} ({{ company['email'] }})
+        <a href="{{ url_for('access_company_dashboard', company_username=company['username']) }}">
+          <button>View Company</button>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</body>
+</html>

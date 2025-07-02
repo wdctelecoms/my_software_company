@@ -81,6 +81,32 @@ def save_users(users):
 def home():
     return render_template("index.html")
 
+@app.route('/company-access-request')
+def company_access_request():
+    if session.get('user_type') != 'person':
+        return redirect(url_for('dashboard'))
+
+    conn = get_db_connection()
+    companies = conn.execute("SELECT username, email FROM users WHERE user_type = 'company'").fetchall()
+    conn.close()
+
+    return render_template('company_access_request.html', companies=companies)
+
+@app.route('/company-dashboard/<company_username>')
+def access_company_dashboard(company_username):
+    if session.get('user_type') != 'person':
+        return redirect(url_for('dashboard'))
+
+    # Here you would add real access logic later
+    conn = get_db_connection()
+    company = conn.execute("SELECT * FROM users WHERE username = ? AND user_type = 'company'", (company_username,)).fetchone()
+    conn.close()
+
+    if company:
+        return render_template('company_dashboard.html', company=company)
+    else:
+        flash("Company not found.")
+        return redirect(url_for('dashboard'))
 
 @app.route('/dashboard')
 def dashboard():

@@ -30,6 +30,15 @@
   {% endif %}
 {% endwith %}
 
+  <div>
+    {% if user_type == 'person' %}
+      <a href="{{ url_for('person_dashboard') }}"><button>Person Dashboard</button></a>
+      <a href="{{ url_for('company_access_request') }}"><button>Access Company Dashboard</button></a>
+    {% elif user_type == 'company' %}
+      <a href="{{ url_for('company_dashboard') }}"><button>Company Dashboard</button></a>
+    {% endif %}
+  </div>
+
     <form action="/logout" method="get" style="text-align:right; margin: 10px;">
     <button style="background:red; color:white; padding:10px 20px; border:none; border-radius:5px;">Logout</button>
 </form>
