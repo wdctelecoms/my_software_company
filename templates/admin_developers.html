@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Developer Submissions - Admin</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0e101c;
+      color: #fff;
+      padding: 20px;
+    }
+    h1 {
+      color: #00ffaa;
+      text-align: center;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #1e2235;
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #333;
+    }
+    th {
+      background-color: #2d334f;
+    }
+    a {
+      color: #00ffee;
+    }
+  </style>
+</head>
+<body>
+  <h1>Developer Verification Submissions</h1>
+  <table>
+    <tr>
+      <th>Full Name</th>
+      <th>Email</th>
+      <th>Description</th>
+      <th>File</th>
+      <th>Submitted At</th>
+    </tr>
+    {% for dev in submissions %}
+    <tr>
+      <td>{{ dev[0] }}</td>
+      <td>{{ dev[1] }}</td>
+      <td>{{ dev[2] }}</td>
+      <td>
+        {% if dev[3] %}
+        <a href="/{{ dev[3] }}" target="_blank">Download</a>
+        {% else %}
+        No File
+        {% endif %}
+      </td>
+      <td>{{ dev[4] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

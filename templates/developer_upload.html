@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Developer Upload</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 30px; background: #121212; color: #fff; }
+        .form-box { max-width: 500px; margin: auto; background: #1e1e1e; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px #333; }
+        input[type="file"], button { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 6px; }
+        input[type="file"] { background: #2e2e2e; color: #fff; }
+        button { background: #4CAF50; color: white; font-weight: bold; }
+        h2 { text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="form-box">
+        <h2>Upload Your Software</h2>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <ul>
+              {% for message in messages %}
+                <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        {% endwith %}
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <button type="submit">Upload</button>
+        </form>
+    </div>
+</body>
+</html>

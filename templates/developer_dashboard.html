@@ -1,0 +1,36 @@
+<!-- templates/developer_dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Developer Dashboard | CyberSentinel360</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Developer Dashboard</h1>
+        <a href="/logout">Logout</a>
+    </nav>
+
+    <div class="container">
+        <h2>Upload Your App or Software</h2>
+        <form action="/developer/upload" method="POST" enctype="multipart/form-data">
+            <input type="text" name="title" placeholder="App/Software Name" required />
+            <textarea name="description" placeholder="Short Description" rows="4"></textarea>
+            <input type="file" name="file" required />
+            <button type="submit">Upload</button>
+        </form>
+
+        <h3>Your Uploaded Apps</h3>
+        {% if uploads %}
+            <ul>
+            {% for upload in uploads %}
+                <li><strong>{{ upload['title'] }}</strong> - {{ upload['description'] }}</li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No uploads yet.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!-- templates/developer_verify.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify Developer Identity</title>
+</head>
+<body>
+    <h2>Submit Your Developer Credentials</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <label>Full Name:</label><br>
+        <input type="text" name="fullname" required><br><br>
+
+        <label>Email:</label><br>
+        <input type="email" name="email" required><br><br>
+
+        <label>Project Description:</label><br>
+        <textarea name="project_desc" required></textarea><br><br>
+
+        <label>Upload ID or Proof (optional):</label><br>
+        <input type="file" name="proof"><br><br>
+
+        <button type="submit">Submit for Verification</button>
+    </form>
+</body>
+</html>

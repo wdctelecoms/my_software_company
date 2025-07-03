@@ -1,8 +1,11 @@
+from flask import send_from_directory
+from werkzeug.utils import secure_filename
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask import Flask, render_template, request, redirect, url_for, session
 from email.mime.text import MIMEText
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, session, url_for
+from functools import wraps
 from flask import Flask, render_template, jsonify, request
 import time, json, subprocess, os
 import json, os
@@ -12,12 +15,20 @@ import smtplib
 
 app = Flask(__name__)
 
+DEVELOPERS = {}  # You can later replace this with SQLite
 
 app.secret_key = 'wdcwamulumbiabifostaer1234danibri'
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "mypassword"
 
 IP_LOG_FILE = "data/ip_logs.json"
 
 USER_FILE = "data/users.json"
+
+UPLOAD_FOLDER = 'uploaded_files'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 def send_signup_confirmation_email(email, username, user_type):
     subject = "Welcome to cybersentinental 360"
@@ -77,6 +88,77 @@ def save_users(users):
     with open(USER_FILE, "w") as f:
         json.dump(users, f, indent=2)
 
+
+def admin_login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('admin_logged_in'):
+            return redirect(url_for('admin_login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        print("Entered username:", username)
+        print("Entered password:", password)
+
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['admin_logged_in'] = True
+            return redirect(url_for('admin_dashboard'))
+        else:
+            flash('Invalid credentials', 'danger')
+            return redirect(url_for('admin_login'))
+    return render_template('admin_login.html')
+
+@app.route('/admin/developers')
+@admin_login_required
+def admin_dashboard():
+    # Placeholder data or pull from DB
+    return render_template('admin_developers.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.pop('admin_logged_in', None)
+    return redirect(url_for('admin_login'))
+
+@app.route('/developer')
+def developer_intro():
+    return render_template('developer_intro.html')
+
+@app.route('/dev_uploads/<path:filename>')
+def serve_dev_upload(filename):
+    return send_from_directory('dev_uploads', filename)
+
+@app.route('/developer/verify', methods=['GET', 'POST'])
+def developer_verify():
+    if request.method == 'POST':
+        fullname = request.form['fullname']
+        email = request.form['email']
+        project_desc = request.form['project_desc']
+
+        file_path = ''
+        file = request.files.get('proof')
+        if file and file.filename != '':
+            os.makedirs('dev_uploads', exist_ok=True)
+            file_path = os.path.join('dev_uploads', file.filename)
+            file.save(file_path)
+
+        conn = sqlite3.connect('cybersentinel.db')
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO developer_verifications (fullname, email, project_desc, file_path)
+            VALUES (?, ?, ?, ?)
+        ''', (fullname, email, project_desc, file_path))
+        conn.commit()
+        conn.close()
+
+        return render_template('developer_success.html')
+
+    return render_template('developer_verify.html')
+
 @app.route('/')
 def home():
     return render_template("index.html")
@@ -110,58 +192,23 @@ def access_company_dashboard(company_username):
 
 @app.route('/dashboard')
 def dashboard():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
+    # Example tools data (replace with DB or JSON load later)
+    tools = [
+        {
+            "name": "Mobile Firewall Pro",
+            "description": "Protect your mobile apps with deep traffic inspection.",
+            "filename": "mobile-firewall-pro.apk",
+            "category": "Mobile Security"
+        },
+        {
+            "name": "NetGuardian",
+            "description": "Monitor your network for intrusions and anomalies.",
+            "filename": "netguardian.zip",
+            "category": "Network Monitoring"
+        }
+    ]
+    return render_template("dashboard.html", tools=tools)
 
-    user_type = session['user_type']
-    username = session['username']
-
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    # Shared stats
-    cursor.execute("SELECT COUNT(*) FROM users")
-    total_users = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM logins")
-    total_logins = cursor.fetchone()[0]
-
-    # For graphs
-    cursor.execute("""
-        SELECT username, COUNT(*) as login_count
-        FROM logins
-        GROUP BY username ORDER BY login_count DESC
-    """)
-    top_users = cursor.fetchall()
-
-    cursor.execute("""
-        SELECT DATE(login_time) as day, COUNT(*) as count
-        FROM logins
-        GROUP BY day ORDER BY day ASC
-    """)
-    logins_per_day = cursor.fetchall()
-
-    # Admin-only: user list
-    users = []
-    if user_type == 'admin':
-        cursor.execute("SELECT id, username, email, user_type FROM users")
-        users = cursor.fetchall()
-
-    conn.close()
-
-    return render_template(
-        'dashboard.html',
-        username=username,
-        user_type=user_type,
-        total_users=total_users,
-        total_logins=total_logins,
-        top_users=top_users,
-        user_labels=[u['username'] for u in top_users],
-        login_counts=[u['login_count'] for u in top_users],
-        day_labels=[r['day'] for r in logins_per_day],
-        day_counts=[r['count'] for r in logins_per_day],
-        users=users  # Only filled for admin
-    )
 
 @app.route('/system-stats')
 def system_stats():
@@ -360,6 +407,31 @@ def company_dashboard():
     if session.get('user_type') != 'company':
         return redirect(url_for('dashboard'))
     return render_template('company_dashboard.html')
+
+@app.route('/download/<filename>')
+def download_tool(filename):
+    return send_from_directory('uploaded_files', filename, as_attachment=True)
+
+@app.route('/upload', methods=['GET', 'POST'])
+def upload_tool():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('dashboard'))
+    return render_template('upload.html')
+
+@app.route('/developer')
+def developer_dashboard():
+    return render_template('developer_dashboard.html')
+
+@app.route('/developer/upload', methods=['POST'])
+def developer_upload():
+    if not session.get('developer_logged_in'):
+        return redirect(url_for('developer_login'))
+
+    # Upload logic here
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
